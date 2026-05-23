@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Power Platform Environment Strategy — Bilal Shabbir</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8fafc; --card: #fff; --text: #0f172a; --muted: #475569;
+      --faint: #94a3b8; --accent: #2563eb; --border: rgba(15,23,42,0.09);
+      --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --max: 760px; --nav: 64px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: var(--nav); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: rgba(248,250,252,0.92); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .logo-mark { width: 32px; height: 32px; border-radius: 7px; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 0.72rem; font-weight: 800; }
+    .logo-text { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .nav-back { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+    .article-wrap { max-width: var(--max); margin: 0 auto; padding: calc(var(--nav) + 64px) 1.5rem 96px; }
+    .breadcrumb { font-family: var(--mono); font-size: 0.68rem; color: var(--faint); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.4rem; }
+    .breadcrumb a { color: var(--accent); }
+    .post-tag { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; padding: 0.18rem 0.55rem; border-radius: 4px; background: rgba(37,99,235,0.08); color: var(--accent); margin-bottom: 1rem; }
+    .post-title { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 1rem; }
+    .post-meta { font-family: var(--mono); font-size: 0.72rem; color: var(--faint); margin-bottom: 2.5rem; display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .post-intro { font-size: 1.1rem; color: var(--muted); line-height: 1.7; margin-bottom: 3rem; padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+    .post-body { font-size: 1rem; line-height: 1.75; color: var(--muted); }
+    .post-body h2 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 2.5rem 0 0.75rem; }
+    .post-body h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin: 1.75rem 0 0.5rem; }
+    .post-body p { margin-bottom: 1.25rem; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; margin-bottom: 1.25rem; }
+    .post-body li { margin-bottom: 0.4rem; }
+    .post-body strong { color: var(--text); font-weight: 700; }
+    .post-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.85em; background: rgba(37,99,235,0.07); color: #1e40af; padding: 0.15em 0.4em; border-radius: 4px; }
+    pre { background: #0f172a; border-radius: 10px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; font-family: var(--mono); font-size: 0.85rem; line-height: 1.65; color: #e2e8f0; }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    .callout { border-left: 3px solid var(--accent); background: rgba(37,99,235,0.05); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.5rem 0; color: var(--muted); }
+    .callout.warn { border-color: #d97706; background: rgba(217,119,6,0.06); }
+    .callout strong { color: var(--text); }
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .author-row { display: flex; align-items: center; gap: 1rem; }
+    .author-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+    .author-name { font-weight: 700; color: var(--text); }
+    .author-role { font-size: 0.82rem; color: var(--faint); font-family: var(--mono); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 2rem; font-size: 0.875rem; color: var(--accent); font-family: var(--mono); }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <div class="logo-mark">BS</div>
+      <span class="logo-text">Bilal Shabbir</span>
+    </a>
+    <a href="/#blog" class="nav-back">← Back to blog</a>
+  </nav>
+
+  <article class="article-wrap">
+
+    <div class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#blog">Blog</a> / Environment Strategy
+    </div>
+
+    <span class="post-tag">ALM / DevOps</span>
+    <h1 class="post-title">Power Platform Environment Strategy for Real Teams</h1>
+    <div class="post-meta">
+      <span>Bilal Shabbir</span>
+      <span>May 2026</span>
+      <span>9 min read</span>
+    </div>
+
+    <p class="post-intro">
+      Most teams start Power Platform the same way: everyone builds in the default environment,
+      nothing is in source control, and deploying to production means copy-pasting manually.
+      That works until it doesn't — usually at the worst possible time. This is the environment
+      strategy and deployment approach I use for teams beyond the trial stage.
+    </p>
+
+    <div class="post-body">
+
+      <h2>Why the default environment is a trap</h2>
+      <p>
+        The default environment in Power Platform is shared across your entire tenant. Every user
+        has maker rights by default. There's no governance, no ALM, and no separation between
+        someone's experimental app and a business-critical process. The first time a maker deletes
+        a shared flow that production depends on, you'll understand why isolation matters.
+      </p>
+
+      <h2>The three-environment baseline</h2>
+      <p>
+        For any solution that matters to the business, you need three environments:
+      </p>
+      <pre><code>Development (Dev)
+  ↓  Export managed solution
+Test / UAT
+  ↓  Export managed solution
+Production (Prod)</code></pre>
+
+      <ul>
+        <li><strong>Dev</strong> — makers work here. Unmanaged solutions. Multiple developers can work simultaneously on feature branches.</li>
+        <li><strong>Test / UAT</strong> — managed solution imported from Dev. Used for QA and user acceptance. Business users sign off here before anything goes to Prod.</li>
+        <li><strong>Production</strong> — managed solution imported from Test. Only the deployment pipeline has write access. No direct editing.</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Managed vs Unmanaged solutions:</strong> Unmanaged solutions are editable — use
+        them in Dev. Managed solutions are locked — use them in Test and Prod. Importing a managed
+        solution to an environment where an unmanaged version exists will cause problems; never
+        mix managed and unmanaged in the same environment.
+      </div>
+
+      <h2>Solution naming and structure</h2>
+      <p>
+        A solution is your deployment unit. Every component — app, flow, table, connection
+        reference, environment variable — should be inside a solution. Never build directly in
+        an environment without a solution; components built outside solutions can't be moved.
+      </p>
+
+      <p>I follow this naming convention:</p>
+      <pre><code>// Publisher prefix: 3-4 letters for your org
+Publisher: contoso (prefix: cnt)
+
+// Solution names: PascalCase, describe the business domain
+cnt_SupportManagement_Core
+cnt_SupportManagement_Extensions
+
+// Version: match your release cycle
+1.0.0.0  → initial release
+1.0.0.1  → patch
+1.1.0.0  → minor feature
+2.0.0.0  → breaking change</code></pre>
+
+      <h2>Environment Variables — the right way to handle config</h2>
+      <p>
+        Environment variables let you change configuration (SharePoint URLs, SQL connection strings,
+        feature flags) between environments without modifying the solution. Define them in your
+        solution and set their values in each environment separately.
+      </p>
+
+      <pre><code>// In your solution — define environment variables
+SupportSiteUrl  (type: string, default: https://contoso.sharepoint.com/sites/support-dev)
+MaxRetryCount   (type: integer, default: 3)
+EnableAlerts    (type: boolean, default: false)
+
+// In Test environment — override
+SupportSiteUrl → https://contoso.sharepoint.com/sites/support-test
+
+// In Prod environment — override
+SupportSiteUrl → https://contoso.sharepoint.com/sites/support
+EnableAlerts   → true</code></pre>
+
+      <div class="callout warn">
+        <strong>Never hardcode environment-specific values</strong> in flows, apps, or connection
+        references. If a SharePoint URL is hardcoded in a flow, every deployment to a new environment
+        requires manual editing — which defeats the purpose of managed solutions.
+      </div>
+
+      <h2>Connection References — not just environment variables</h2>
+      <p>
+        Connection references are how solutions handle connector credentials across environments.
+        When you add a connector action to a flow inside a solution, Power Apps creates a
+        connection reference automatically. Each environment then maps that reference to the
+        appropriate service account credentials.
+      </p>
+      <p>
+        The key rule: <strong>use service accounts for all production connections</strong>.
+        Never use a personal user account for a production flow's connections. If that employee
+        leaves, the connection breaks.
+      </p>
+
+      <h2>Deploying with Azure DevOps Pipelines</h2>
+      <p>
+        Manual deployments don't scale and introduce human error. The Power Platform Build Tools
+        extension for Azure DevOps gives you pipeline tasks for every deployment step:
+      </p>
+
+      <pre><code># azure-pipelines.yml — simplified deployment pipeline
+
+stages:
+  - stage: ExportFromDev
+    jobs:
+      - job: Export
+        steps:
+          - task: PowerPlatformExportSolution@2
+            inputs:
+              authenticationType: PowerPlatformSPN
+              PowerPlatformSPN: dev-service-connection
+              SolutionName: cnt_SupportManagement_Core
+              SolutionOutputFile: $(Build.ArtifactStagingDirectory)/solution.zip
+              Managed: true
+
+  - stage: DeployToTest
+    dependsOn: ExportFromDev
+    jobs:
+      - job: Import
+        steps:
+          - task: PowerPlatformImportSolution@2
+            inputs:
+              authenticationType: PowerPlatformSPN
+              PowerPlatformSPN: test-service-connection
+              SolutionInputFile: $(Pipeline.Workspace)/solution.zip</code></pre>
+
+      <h2>Common mistakes and how to avoid them</h2>
+      <ul>
+        <li>
+          <strong>Building outside a solution:</strong> Components created directly in an environment
+          (not inside a solution) cannot be exported. Always create your app/flow from within a
+          solution in Power Apps Studio.
+        </li>
+        <li>
+          <strong>Using personal accounts for connections:</strong> Production flows using personal
+          accounts break when the user leaves. Create service accounts and map connection references
+          to them.
+        </li>
+        <li>
+          <strong>Skipping the Test environment:</strong> Going directly Dev → Prod seems faster
+          until a bug slips through. Even a lightweight UAT sign-off catches problems before they
+          affect real users.
+        </li>
+        <li>
+          <strong>Not versioning solutions:</strong> Increment the solution version on every
+          deployment. This creates a deployment history and lets you roll back to a known state.
+        </li>
+        <li>
+          <strong>Sharing flows in Prod directly:</strong> In production, flows should run as the
+          service account, not be shared with individual users for editing. Share the canvas app
+          for user access; keep the flow ownership separate.
+        </li>
+      </ul>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Use three environments: Dev (unmanaged), Test (managed), Prod (managed)</li>
+        <li>Everything lives inside a solution — no orphaned components</li>
+        <li>Environment variables and connection references handle all config differences</li>
+        <li>Service accounts own all production connections — never personal accounts</li>
+        <li>Automate deployments with Azure DevOps + Power Platform Build Tools</li>
+        <li>Version every deployment and keep a pipeline-driven history</li>
+      </ul>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="author-row">
+        <img src="/assets/bilal.png" alt="Bilal Shabbir" class="author-avatar" />
+        <div>
+          <div class="author-name">Bilal Shabbir</div>
+          <div class="author-role">Power Platform Developer · PL-600 Certified</div>
+        </div>
+      </div>
+      <a href="/#blog" class="back-link">← Back to all articles</a>
+    </div>
+
+  </article>
+
+</body>
+</html>

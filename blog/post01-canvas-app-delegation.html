@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delegation in Canvas Apps — Bilal Shabbir</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8fafc; --card: #fff; --text: #0f172a; --muted: #475569;
+      --faint: #94a3b8; --accent: #2563eb; --border: rgba(15,23,42,0.09);
+      --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(15,23,42,0.05);
+      --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --max: 760px; --nav: 64px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: var(--nav);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;
+      background: rgba(248,250,252,0.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .logo-mark { width: 32px; height: 32px; border-radius: 7px; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 0.72rem; font-weight: 800; }
+    .logo-text { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .nav-back { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+
+    /* ARTICLE */
+    .article-wrap { max-width: var(--max); margin: 0 auto; padding: calc(var(--nav) + 64px) 1.5rem 96px; }
+    .breadcrumb { font-family: var(--mono); font-size: 0.68rem; color: var(--faint); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.4rem; }
+    .breadcrumb a { color: var(--accent); }
+    .post-tag { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; padding: 0.18rem 0.55rem; border-radius: 4px; background: rgba(37,99,235,0.08); color: var(--accent); margin-bottom: 1rem; }
+    .post-title { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 1rem; }
+    .post-meta { font-family: var(--mono); font-size: 0.72rem; color: var(--faint); margin-bottom: 2.5rem; display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .post-intro { font-size: 1.1rem; color: var(--muted); line-height: 1.7; margin-bottom: 3rem; padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+
+    /* BODY */
+    .post-body { font-size: 1rem; line-height: 1.75; color: var(--muted); }
+    .post-body h2 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 2.5rem 0 0.75rem; }
+    .post-body h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin: 1.75rem 0 0.5rem; }
+    .post-body p { margin-bottom: 1.25rem; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; margin-bottom: 1.25rem; }
+    .post-body li { margin-bottom: 0.4rem; }
+    .post-body strong { color: var(--text); font-weight: 700; }
+    .post-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+    /* CODE */
+    .post-body code {
+      font-family: var(--mono); font-size: 0.85em;
+      background: rgba(37,99,235,0.07); color: #1e40af;
+      padding: 0.15em 0.4em; border-radius: 4px;
+    }
+    pre {
+      background: #0f172a; border-radius: 10px;
+      padding: 1.5rem; margin: 1.5rem 0;
+      overflow-x: auto; font-family: var(--mono); font-size: 0.85rem;
+      line-height: 1.65; color: #e2e8f0;
+    }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+    /* CALLOUT */
+    .callout {
+      border-left: 3px solid var(--accent); background: rgba(37,99,235,0.05);
+      border-radius: 0 8px 8px 0; padding: 1rem 1.25rem;
+      margin: 1.5rem 0; color: var(--muted);
+    }
+    .callout.warn { border-color: #d97706; background: rgba(217,119,6,0.06); }
+    .callout strong { color: var(--text); }
+
+    /* FOOTER */
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .author-row { display: flex; align-items: center; gap: 1rem; }
+    .author-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+    .author-name { font-weight: 700; color: var(--text); }
+    .author-role { font-size: 0.82rem; color: var(--faint); font-family: var(--mono); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 2rem; font-size: 0.875rem; color: var(--accent); font-family: var(--mono); }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <div class="logo-mark">BS</div>
+      <span class="logo-text">Bilal Shabbir</span>
+    </a>
+    <a href="/#blog" class="nav-back">← Back to blog</a>
+  </nav>
+
+  <article class="article-wrap">
+
+    <div class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#blog">Blog</a> / Delegation in Canvas Apps
+    </div>
+
+    <span class="post-tag">Canvas Apps</span>
+    <h1 class="post-title">Delegation in Canvas Apps: Stop Hitting the 500-Row Limit</h1>
+    <div class="post-meta">
+      <span>Bilal Shabbir</span>
+      <span>May 2026</span>
+      <span>8 min read</span>
+    </div>
+
+    <p class="post-intro">
+      Your gallery looks perfect in development. Then you deploy to production and suddenly half the
+      records are missing — with no error message explaining why. Delegation is the most misunderstood
+      concept in Canvas Apps, and it silently breaks apps that work fine with small datasets.
+      Here's how it actually works and how to design around it.
+    </p>
+
+    <div class="post-body">
+
+      <h2>What is delegation?</h2>
+      <p>
+        When you write a Power Apps formula against a data source like SharePoint or Dataverse,
+        Power Apps has two choices: run the query <strong>locally</strong> (pull all records to the
+        client, then filter) or <strong>delegate</strong> the query to the server (let the data
+        source do the filtering). Delegation means the second option.
+      </p>
+      <p>
+        The problem is that local processing has a hard cap — Power Apps will only pull a maximum
+        of 2,000 records by default (you can raise this to 2,000 in settings, but that's still the
+        ceiling). If your SharePoint list has 10,000 items and you filter locally, you're silently
+        operating on only the first 2,000 items. The yellow delegation warning triangle in the
+        formula bar is trying to tell you this.
+      </p>
+
+      <div class="callout warn">
+        <strong>The silent failure problem:</strong> Power Apps does not show an error when delegation
+        fails. Your gallery will render, show items, and appear to work correctly. Users will never
+        know they're seeing incomplete results.
+      </div>
+
+      <h2>Which functions delegate and which don't</h2>
+      <p>
+        Delegation support varies by connector. Here's what you need to know for the two most
+        common data sources:
+      </p>
+
+      <h3>SharePoint Online — what delegates</h3>
+      <ul>
+        <li><code>Filter()</code> with <code>=</code>, <code>&lt;&gt;</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code> on most column types</li>
+        <li><code>StartsWith()</code> on text columns</li>
+        <li><code>Search()</code> — but only on indexed columns</li>
+        <li><code>Sort()</code> and <code>SortByColumns()</code></li>
+        <li><code>CountRows()</code> when used with a delegable filter</li>
+      </ul>
+
+      <h3>SharePoint Online — what does NOT delegate</h3>
+      <ul>
+        <li><code>In</code> operator (<code>"value" in column</code>)</li>
+        <li><code>Lower()</code>, <code>Upper()</code>, <code>Len()</code>, <code>Left()</code>, <code>Right()</code>, <code>Mid()</code></li>
+        <li><code>IsBlank()</code> in a filter</li>
+        <li><code>DateDiff()</code>, <code>DateAdd()</code></li>
+        <li>Nested <code>Filter()</code> calls</li>
+        <li>Any formula on a <strong>Person/Group</strong> or <strong>Lookup</strong> column beyond basic equality</li>
+      </ul>
+
+      <div class="callout">
+        <strong>Dataverse delegates far more than SharePoint.</strong> If you're building on Dataverse
+        you get full delegation for <code>Filter</code>, <code>LookUp</code>, string functions,
+        date comparisons, and complex boolean logic. SharePoint's delegation surface is much smaller —
+        keep this in mind when choosing your data source for large datasets.
+      </div>
+
+      <h2>Pattern 1 — Move heavy filtering server-side</h2>
+      <p>
+        The cleanest fix is to only use delegable predicates in your <code>Filter()</code> call.
+        Instead of filtering on a calculated or formula-derived value, store the value you need
+        directly in the list. For example, instead of filtering by "items where DueDate is in the
+        past" using <code>DateDiff</code>, add an indexed <strong>IsOverdue</strong> boolean column
+        that gets set by a Power Automate flow, and filter on that.
+      </p>
+
+      <pre><code>// ❌ Not delegable — DateDiff doesn't push to server
+Filter(
+  ProjectTasks,
+  DateDiff(Today(), DueDate, Days) &lt; 0
+)
+
+// ✅ Delegable — filtering on a stored boolean
+Filter(
+  ProjectTasks,
+  IsOverdue = true
+)</code></pre>
+
+      <h2>Pattern 2 — Collections for small-but-static reference data</h2>
+      <p>
+        If your dataset is small (under 2,000 rows) and relatively stable — like a lookup table,
+        status codes, department list — load it all into a collection on <code>OnStart</code> or
+        the screen's <code>OnVisible</code>. Then filter the collection locally. Collections are
+        always local so delegation doesn't apply, and the data is already in memory so filtering
+        is instant.
+      </p>
+
+      <pre><code>// OnStart or OnVisible
+ClearCollect(
+  colDepartments,
+  Departments  // SharePoint list with &lt;500 rows
+);
+
+// Gallery Items — fast local filter, no delegation concern
+Filter(
+  colDepartments,
+  Region = varSelectedRegion
+)</code></pre>
+
+      <h2>Pattern 3 — Named Formulas for shared computed values</h2>
+      <p>
+        Named Formulas (in Power Apps Studio → App → Formulas) let you define computed values once
+        and reuse them throughout the app. Unlike variables, they recalculate automatically when
+        their dependencies change — so you avoid duplicating filtering logic across screens.
+      </p>
+
+      <pre><code>// App.Formulas
+ActiveTickets = Filter(
+  SupportTickets,
+  Status = "Open",
+  AssignedTo.Email = User().Email
+);</code></pre>
+
+      <p>Now <code>ActiveTickets</code> is available on every screen and recalculates reactively.
+      Because the underlying <code>Filter</code> uses a delegable predicate, this scales to any
+      number of records.</p>
+
+      <h2>Pattern 4 — Pagination for large result sets</h2>
+      <p>
+        When users genuinely need to browse a large dataset, implement pagination instead of trying
+        to load everything. Use the <code>Last()</code> / <code>First()</code> pattern with
+        <code>Filter</code> and a tracked page cursor:
+      </p>
+
+      <pre><code>// On next-page button press
+Set(
+  varPageCursor,
+  Last(Gallery1.AllItems).ID
+);
+
+// Gallery Items — filter records after the cursor
+Filter(
+  SupportTickets,
+  Status = varFilterStatus,
+  ID > varPageCursor
+)</code></pre>
+
+      <h2>How to audit your app for delegation issues</h2>
+      <p>
+        Power Apps Studio shows a yellow warning triangle on any formula with delegation issues.
+        But these are easy to miss, especially in complex apps. Do this instead:
+      </p>
+      <ol>
+        <li>Go to <strong>File → App Settings → Advanced Settings</strong></li>
+        <li>Set <strong>Data row limit</strong> to <strong>5</strong> temporarily</li>
+        <li>Test your app — any gallery that should show more than 5 items but shows exactly 5 (or fewer) has a delegation problem</li>
+        <li>Reset to 500 or 2000 once you've identified all problem areas</li>
+      </ol>
+
+      <div class="callout">
+        <strong>Don't just raise the limit and call it done.</strong> The 2,000-row cap is the
+        ceiling, not a solution. Raising it from 500 to 2,000 just hides the problem for longer.
+        If your data source has more than ~1,500 rows of data relevant to any query, fix the
+        delegation issue properly.
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Delegation means the data source does the filtering, not the client</li>
+        <li>Non-delegable formulas silently cap results at 500–2,000 rows with no error</li>
+        <li>Prefer delegable predicates (<code>=</code>, <code>StartsWith</code>, indexed column comparisons) in <code>Filter()</code></li>
+        <li>Use collections for small, stable reference data</li>
+        <li>Use Named Formulas for shared filtering logic</li>
+        <li>Test with a row limit of 5 to surface any delegation gaps quickly</li>
+      </ul>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="author-row">
+        <img src="/assets/bilal.png" alt="Bilal Shabbir" class="author-avatar" />
+        <div>
+          <div class="author-name">Bilal Shabbir</div>
+          <div class="author-role">Power Platform Developer · PL-600 Certified</div>
+        </div>
+      </div>
+      <a href="/#blog" class="back-link">← Back to all articles</a>
+    </div>
+
+  </article>
+
+</body>
+</html>

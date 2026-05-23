@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Power Automate Error Handling — Bilal Shabbir</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8fafc; --card: #fff; --text: #0f172a; --muted: #475569;
+      --faint: #94a3b8; --accent: #2563eb; --border: rgba(15,23,42,0.09);
+      --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --max: 760px; --nav: 64px;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: none; }
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: var(--nav); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: rgba(248,250,252,0.92); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .logo-mark { width: 32px; height: 32px; border-radius: 7px; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 0.72rem; font-weight: 800; }
+    .logo-text { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .nav-back { font-size: 0.82rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+    .article-wrap { max-width: var(--max); margin: 0 auto; padding: calc(var(--nav) + 64px) 1.5rem 96px; }
+    .breadcrumb { font-family: var(--mono); font-size: 0.68rem; color: var(--faint); margin-bottom: 2rem; display: flex; align-items: center; gap: 0.4rem; }
+    .breadcrumb a { color: var(--accent); }
+    .post-tag { display: inline-block; font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em; padding: 0.18rem 0.55rem; border-radius: 4px; background: rgba(37,99,235,0.08); color: var(--accent); margin-bottom: 1rem; }
+    .post-title { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 1rem; }
+    .post-meta { font-family: var(--mono); font-size: 0.72rem; color: var(--faint); margin-bottom: 2.5rem; display: flex; gap: 1.25rem; flex-wrap: wrap; }
+    .post-intro { font-size: 1.1rem; color: var(--muted); line-height: 1.7; margin-bottom: 3rem; padding-bottom: 3rem; border-bottom: 1px solid var(--border); }
+    .post-body { font-size: 1rem; line-height: 1.75; color: var(--muted); }
+    .post-body h2 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin: 2.5rem 0 0.75rem; }
+    .post-body h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin: 1.75rem 0 0.5rem; }
+    .post-body p { margin-bottom: 1.25rem; }
+    .post-body ul, .post-body ol { padding-left: 1.5rem; margin-bottom: 1.25rem; }
+    .post-body li { margin-bottom: 0.4rem; }
+    .post-body strong { color: var(--text); font-weight: 700; }
+    .post-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .post-body code { font-family: var(--mono); font-size: 0.85em; background: rgba(37,99,235,0.07); color: #1e40af; padding: 0.15em 0.4em; border-radius: 4px; }
+    pre { background: #0f172a; border-radius: 10px; padding: 1.5rem; margin: 1.5rem 0; overflow-x: auto; font-family: var(--mono); font-size: 0.85rem; line-height: 1.65; color: #e2e8f0; }
+    pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+    .callout { border-left: 3px solid var(--accent); background: rgba(37,99,235,0.05); border-radius: 0 8px 8px 0; padding: 1rem 1.25rem; margin: 1.5rem 0; color: var(--muted); }
+    .callout.warn { border-color: #d97706; background: rgba(217,119,6,0.06); }
+    .callout strong { color: var(--text); }
+    .post-footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+    .author-row { display: flex; align-items: center; gap: 1rem; }
+    .author-avatar { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+    .author-name { font-weight: 700; color: var(--text); }
+    .author-role { font-size: 0.82rem; color: var(--faint); font-family: var(--mono); }
+    .back-link { display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 2rem; font-size: 0.875rem; color: var(--accent); font-family: var(--mono); }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="nav-logo">
+      <div class="logo-mark">BS</div>
+      <span class="logo-text">Bilal Shabbir</span>
+    </a>
+    <a href="/#blog" class="nav-back">← Back to blog</a>
+  </nav>
+
+  <article class="article-wrap">
+
+    <div class="breadcrumb">
+      <a href="/">Home</a> / <a href="/#blog">Blog</a> / Power Automate Error Handling
+    </div>
+
+    <span class="post-tag">Power Automate</span>
+    <h1 class="post-title">Error Handling in Power Automate That Actually Works</h1>
+    <div class="post-meta">
+      <span>Bilal Shabbir</span>
+      <span>May 2026</span>
+      <span>7 min read</span>
+    </div>
+
+    <p class="post-intro">
+      Most Power Automate flows fail silently. The run shows a red cross, no one gets notified,
+      and the business process quietly breaks. This guide covers the four error handling patterns
+      I use on every production flow — from Run After settings to parallel error branches and
+      Teams alert cards that tell you exactly what went wrong.
+    </p>
+
+    <div class="post-body">
+
+      <h2>Why default error handling is not enough</h2>
+      <p>
+        Out of the box, a failed action stops the flow and marks the run as failed. Unless someone
+        is actively monitoring the flow's run history, the failure goes unnoticed. For anything
+        that matters — document processing, finance alerts, customer notifications — that's not
+        acceptable.
+      </p>
+      <p>Good error handling in Power Automate means three things:</p>
+      <ul>
+        <li>Capturing what failed and why</li>
+        <li>Notifying the right person immediately</li>
+        <li>Ensuring partial completions don't leave data in a broken state</li>
+      </ul>
+
+      <h2>Pattern 1 — Run After settings</h2>
+      <p>
+        Every action in a flow has a <strong>Run After</strong> configuration. By default, an
+        action only runs if all previous actions <em>succeeded</em>. You can override this to
+        run an action after <em>failed</em>, <em>skipped</em>, or <em>timed out</em> as well.
+      </p>
+      <p>
+        The simplest error handler is a "Send email" or "Post to Teams" action configured to
+        run after a specific step has failed:
+      </p>
+      <ol>
+        <li>Click the three dots on any action → <strong>Configure run after</strong></li>
+        <li>Uncheck "is successful", check "has failed"</li>
+        <li>Add a Teams notification action with the error details</li>
+      </ol>
+
+      <div class="callout warn">
+        <strong>Limitation:</strong> Run After on individual actions only handles that specific
+        action's failure. If you have 20 actions and any one can fail, you'd need 20 error
+        handlers. Use Scope actions instead (see below).
+      </div>
+
+      <h2>Pattern 2 — Scope actions for structured try/catch</h2>
+      <p>
+        A <strong>Scope</strong> action is Power Automate's equivalent of a try/catch block. It
+        groups related actions, and you can configure a single handler to run if any action
+        inside the scope fails.
+      </p>
+      <p>The structure looks like this:</p>
+      <pre><code>Scope: Try
+  ├─ Action 1
+  ├─ Action 2
+  └─ Action N
+
+Scope: Catch  (Run After: Try has failed)
+  ├─ Get error details
+  └─ Post Teams message</code></pre>
+
+      <p>Inside the Catch scope, use the <code>result()</code> function to get error details
+      from the Try scope:</p>
+
+      <pre><code>// In the Teams message body — paste this as an expression
+concat(
+  'Flow failed: ',
+  result('Try')[0]?['error']?['message']
+)</code></pre>
+
+      <p>This gives you the actual error message rather than just "something went wrong".</p>
+
+      <h2>Pattern 3 — Storing full error context</h2>
+      <p>
+        The <code>result()</code> function returns a full JSON object for each action in the
+        scope — status, start/end time, inputs, outputs, and error. For production flows I
+        always store this to a SharePoint list or SQL table before sending the notification,
+        so there's a permanent audit trail.
+      </p>
+
+      <pre><code>// Initialize variable in Try scope
+Initialize variable
+  Name: varRunId
+  Value: @{workflow()['run']['name']}
+
+// In Catch scope — create SharePoint error log entry
+Create item — FlowErrorLog list
+  FlowName: Document Processor
+  RunId: @{variables('varRunId')}
+  ErrorMessage: @{result('Try')[0]?['error']?['message']}
+  FailedAction: @{result('Try')[0]?['name']}
+  Timestamp: @{utcNow()}</code></pre>
+
+      <h2>Pattern 4 — Teams Adaptive Card alerts</h2>
+      <p>
+        Plain text notifications get ignored. An Adaptive Card with the error details, a link
+        to the run history, and a "Re-run" button gets acted on. Here's the card body I use:
+      </p>
+
+      <pre><code>{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "⚠️ Flow Failed",
+      "size": "Large",
+      "weight": "Bolder",
+      "color": "Attention"
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        { "title": "Flow", "value": "Document Processor" },
+        { "title": "Error", "value": "@{result('Try')[0]?['error']?['message']}" },
+        { "title": "Time", "value": "@{formatDateTime(utcNow(), 'dd MMM yyyy HH:mm')}" }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "View Run History",
+      "url": "https://make.powerautomate.com/..."
+    }
+  ]
+}</code></pre>
+
+      <h2>Handling timeouts separately</h2>
+      <p>
+        HTTP actions and some connectors can time out independently of failing. Configure your
+        Catch scope's Run After to include <strong>timed out</strong> in addition to failed.
+        For flows that call external APIs, add a timeout policy on the HTTP action itself
+        (under Settings → Timeout) so you control when it gives up rather than waiting for
+        the platform's default.
+      </p>
+
+      <h2>The complete error handling structure</h2>
+      <p>Every production flow I build follows this skeleton:</p>
+      <pre><code>Trigger
+│
+├─ Scope: Validate Inputs
+│   └─ Condition: required fields present?
+│       └─ No → Terminate (Failed, "Missing required input: ...")
+│
+├─ Scope: Try
+│   ├─ Main business logic actions
+│   └─ Initialize varRunId = workflow()['run']['name']
+│
+└─ Scope: Catch  ← Run After: Try has failed OR timed out
+    ├─ Create item in FlowErrorLog
+    ├─ Post Adaptive Card to Teams channel
+    └─ Terminate (Failed, error message)</code></pre>
+
+      <div class="callout">
+        <strong>Don't forget Terminate.</strong> If you handle the error but don't explicitly
+        terminate the flow as Failed, the run shows as Succeeded — which is misleading.
+        Always end your Catch scope with a Terminate action set to Failed.
+      </div>
+
+      <h2>Summary</h2>
+      <ul>
+        <li>Use <strong>Scope (Try/Catch)</strong> rather than per-action Run After — it scales</li>
+        <li>Use <code>result('ScopeName')[0]?['error']?['message']</code> to get the actual error text</li>
+        <li>Log errors to SharePoint or SQL for a permanent audit trail</li>
+        <li>Send Teams Adaptive Cards with a link to the run history</li>
+        <li>Always terminate as Failed at the end of your Catch scope</li>
+      </ul>
+
+    </div>
+
+    <div class="post-footer">
+      <div class="author-row">
+        <img src="/assets/bilal.png" alt="Bilal Shabbir" class="author-avatar" />
+        <div>
+          <div class="author-name">Bilal Shabbir</div>
+          <div class="author-role">Power Platform Developer · PL-600 Certified</div>
+        </div>
+      </div>
+      <a href="/#blog" class="back-link">← Back to all articles</a>
+    </div>
+
+  </article>
+
+</body>
+</html>

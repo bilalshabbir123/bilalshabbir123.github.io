@@ -103,6 +103,7 @@ p { color: var(--muted); }
   gap: 4rem; align-items: center;
   position: relative; z-index: 1; padding: 72px 0;
 }
+.hero-text { display: flex; flex-direction: column; }
 .hero-available {
   display: inline-flex; align-items: center; gap: 0.5rem;
   font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.04em;

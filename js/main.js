@@ -29,6 +29,44 @@
   }
 })();
 
+// ── CONTACT FORM (Formspree AJAX) ──
+(function () {
+  const form = document.getElementById('contactForm');
+  const status = document.getElementById('formStatus');
+  if (!form || !status) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    status.textContent = '';
+
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { Accept: 'application/json' }
+      });
+      if (res.ok) {
+        status.style.color = 'var(--green)';
+        status.textContent = 'Message sent — I\'ll get back to you soon!';
+        form.reset();
+      } else {
+        const data = await res.json();
+        status.style.color = '#dc2626';
+        status.textContent = data.errors?.map(e => e.message).join(', ') || 'Something went wrong. Please try again.';
+      }
+    } catch {
+      status.style.color = '#dc2626';
+      status.textContent = 'Network error — please email me directly.';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+    }
+  });
+})();
+
 // ── SCROLL REVEAL ──
 (function () {
   const els = document.querySelectorAll('.reveal');
